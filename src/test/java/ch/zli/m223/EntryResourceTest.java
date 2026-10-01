@@ -37,6 +37,66 @@ public class EntryResourceTest {
              .body("[0].id", is(id.intValue()))
              .body("[0].checkIn", is("2026-09-29T08:00:00"))
              .body("[0].checkOut", is("2026-09-29T17:00:00"));
+
+        given()
+          .contentType("application/json")
+          .body("""
+              {"id":999999,"checkIn":"2026-09-29T09:00:00","checkOut":"2026-09-29T18:00:00"}
+              """)
+          .when().put("/entries/{id}", id)
+          .then()
+             .statusCode(200)
+             .body("id", is(id.intValue()))
+             .body("checkIn", is("2026-09-29T09:00:00"))
+             .body("checkOut", is("2026-09-29T18:00:00"));
+
+        given()
+          .when().get("/entries")
+          .then()
+             .statusCode(200)
+             .body("size()", is(1))
+             .body("[0].id", is(id.intValue()))
+             .body("[0].checkIn", is("2026-09-29T09:00:00"))
+             .body("[0].checkOut", is("2026-09-29T18:00:00"));
+
+        given()
+          .contentType("application/json")
+          .body("""
+              {"checkIn":"2026-09-29T10:00:00"}
+              """)
+          .when().put("/entries/{id}", id)
+          .then().statusCode(400);
+
+        given()
+          .when().get("/entries")
+          .then()
+             .statusCode(200)
+             .body("[0].checkIn", is("2026-09-29T09:00:00"))
+             .body("[0].checkOut", is("2026-09-29T18:00:00"));
+
+        given()
+          .when().delete("/entries/{id}", id)
+          .then().statusCode(204).body(is(""));
+
+        given()
+          .when().get("/entries")
+          .then().statusCode(200).body(is("[]"));
+
+        given()
+          .when().delete("/entries/{id}", id)
+          .then().statusCode(404);
+
+        given()
+          .contentType("application/json")
+          .body("""
+              {"checkIn":"2026-09-29T09:00:00","checkOut":"2026-09-29T18:00:00"}
+              """)
+          .when().put("/entries/{id}", id)
+          .then().statusCode(404);
+
+        given()
+          .when().get("/entries")
+          .then().statusCode(200).body(is("[]"));
     }
 
 }
