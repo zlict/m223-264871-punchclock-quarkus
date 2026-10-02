@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
 @QuarkusTest
 public class EntryResourceTest {
@@ -20,11 +21,12 @@ public class EntryResourceTest {
         Long id = given()
           .contentType("application/json")
           .body("""
-              {"checkIn":"2026-09-29T08:00:00","checkOut":"2026-09-29T17:00:00"}
+              {"id":999999,"checkIn":"2026-09-29T08:00:00","checkOut":"2026-09-29T17:00:00"}
               """)
           .when().post("/entries")
           .then()
              .statusCode(200)
+             .body("id", not(999999))
              .body("checkIn", is("2026-09-29T08:00:00"))
              .body("checkOut", is("2026-09-29T17:00:00"))
              .extract().jsonPath().getLong("id");

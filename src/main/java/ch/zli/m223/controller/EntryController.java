@@ -17,6 +17,7 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import ch.zli.m223.dto.EntryDto;
 import ch.zli.m223.model.Entry;
 import ch.zli.m223.service.EntryService;
 
@@ -30,16 +31,16 @@ public class EntryController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Index all Entries.", description = "Returns a list of all entries.")
-    public List<Entry> index() {
-        return entryService.findAll();
+    public List<EntryDto> index() {
+        return entryService.findAll().stream().map(EntryController::toDto).toList();
     }
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Creates a new entry.", description = "Creates a new entry and returns the newly added entry.")
-    public Entry create(Entry entry) {
-       return entryService.createEntry(entry);
+    public EntryDto create(EntryDto entry) {
+        return toDto(entryService.createEntry(toEntity(entry)));
     }
 
     @PUT
@@ -47,8 +48,8 @@ public class EntryController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Updates an entry.", description = "Replaces check-in and check-out of an existing entry.")
-    public Entry update(@PathParam("id") Long id, Entry entry) {
-        return entryService.updateEntry(id, entry);
+    public EntryDto update(@PathParam("id") Long id, EntryDto entry) {
+        return toDto(entryService.updateEntry(id, toEntity(entry)));
     }
 
     @DELETE
@@ -57,5 +58,23 @@ public class EntryController {
     public Response delete(@PathParam("id") Long id) {
         entryService.deleteEntry(id);
         return Response.noContent().build();
+    }
+
+    private static Entry toEntity(EntryDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        Entry entry = new Entry();
+        entry.setCheckIn(dto.getCheckIn());
+        entry.setCheckOut(dto.getCheckOut());
+        return entry;
+    }
+
+    private static EntryDto toDto(Entry entry) {
+        EntryDto dto = new EntryDto();
+        dto.setId(entry.getId());
+        dto.setCheckIn(entry.getCheckIn());
+        dto.setCheckOut(entry.getCheckOut());
+        return dto;
     }
 }
