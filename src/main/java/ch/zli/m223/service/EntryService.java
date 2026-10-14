@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
+import ch.zli.m223.dto.TimeSummaryDto;
 import ch.zli.m223.model.Entry;
 import ch.zli.m223.repository.EntryRepository;
 
@@ -18,6 +19,9 @@ import ch.zli.m223.repository.EntryRepository;
 public class EntryService {
     @Inject
     private EntryRepository entryRepository;
+
+    @Inject
+    TimeSummaryService timeSummaryService;
 
     @Inject
     CategoryService categoryService;
@@ -30,6 +34,10 @@ public class EntryService {
         resolveReferences(entry);
         entryRepository.persist(entry);
         return entry;
+    }
+
+    public List<TimeSummaryDto> GetTimeSummaries() {
+        return timeSummaryService.CalculateSummaryPerDay(entryRepository.listAll());
     }
 
     public List<Entry> findAll() {
