@@ -1,6 +1,9 @@
 package ch.zli.m223.service;
 
 import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import ch.zli.m223.model.Tag;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -16,9 +19,15 @@ public class EntryService {
     @Inject
     private EntryRepository entryRepository;
 
+    @Inject
+    CategoryService categoryService;
+    @Inject
+    TagService tagService;
+
     @Transactional
     public Entry createEntry(Entry entry) {
         validateEntry(entry);
+        resolveReferences(entry);
         entryRepository.persist(entry);
         return entry;
     }
@@ -26,6 +35,15 @@ public class EntryService {
     public List<Entry> findAll() {
         return entryRepository.listAll();
     }
+    
+    public Entry findById(Long id) {
+        Entry entry = entryRepository.findById(id);
+        if (entry == null) {
+            throw new NotFoundException("Entry not found");
+        }
+        return entry;
+    }
+
     @Transactional
     public Entry updateEntry(Long id, Entry entry) {
         Entry existingEntry = entryRepository.findById(id);
@@ -33,8 +51,11 @@ public class EntryService {
             throw new NotFoundException("Entry not found");
         }
         validateEntry(entry);
+        resolveReferences(entry);
         existingEntry.setCheckIn(entry.getCheckIn());
         existingEntry.setCheckOut(entry.getCheckOut());
+        existingEntry.setCategory(entry.getCategory());
+        existingEntry.setTags(entry.getTags());
         return existingEntry;
     }
 
@@ -52,5 +73,15 @@ public class EntryService {
         if (!entryRepository.deleteById(id)) {
             throw new NotFoundException("Entry not found");
         }
+    }
+    private void resolveReferences(Entry entry) {
+        if (entry.getCategory() != null) {
+            entry.setCategory(categoryService.findById(entry.getCategory().getId()));
+        }
+        Set<Tag> tags = new LinkedHashSet<>();
+        for (Tag tag : entry.getTags()) {
+            tags.add(tagService.findById(tag.getId()));
+        }
+        entry.setTags(tags);
     }
 }

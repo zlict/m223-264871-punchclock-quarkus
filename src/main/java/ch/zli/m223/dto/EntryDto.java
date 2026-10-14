@@ -1,6 +1,8 @@
 package ch.zli.m223.dto;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.AssertTrue;
@@ -28,6 +30,13 @@ public class EntryDto {
         }
         return checkIn.isBefore(checkOut);
     }
+    private Long categoryId;
+    private Set<Long> tagIds = new LinkedHashSet<>();
+
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+    public Set<Long> getTagIds() { return tagIds; }
+    public void setTagIds(Set<Long> tagIds) { this.tagIds = tagIds; }
 
     public Long getId() {
         return id;

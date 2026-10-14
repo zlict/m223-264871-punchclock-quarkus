@@ -1,6 +1,8 @@
 package ch.zli.m223.controller;
 
 import java.util.List;
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -17,14 +19,18 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import ch.zli.m223.dto.EntryDto;
 import ch.zli.m223.model.Entry;
+import ch.zli.m223.model.Category;
+import ch.zli.m223.model.Tag;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import ch.zli.m223.service.EntryService;
 
+@Transactional
 @Path("/entries")
-@Tag(name = "Entries", description = "Handling of entries")
+@org.eclipse.microprofile.openapi.annotations.tags.Tag(name = "Entries", description = "Handling of entries")
 public class EntryController {
 
     @Inject
@@ -69,6 +75,19 @@ public class EntryController {
         Entry entry = new Entry();
         entry.setCheckIn(dto.getCheckIn());
         entry.setCheckOut(dto.getCheckOut());
+        if (dto.getCategoryId() != null) {
+            Category category = new Category();
+            category.setId(dto.getCategoryId());
+            entry.setCategory(category);
+        }
+        if (dto.getTagIds() != null) {
+            for (Long tagId : dto.getTagIds()) {
+                if (tagId == null) { throw new BadRequestException("Tag ID must not be null"); }
+                Tag tag = new Tag();
+                tag.setId(tagId);
+                entry.getTags().add(tag);
+            }
+        }
         return entry;
     }
 
@@ -77,6 +96,12 @@ public class EntryController {
         dto.setId(entry.getId());
         dto.setCheckIn(entry.getCheckIn());
         dto.setCheckOut(entry.getCheckOut());
+        dto.setCategoryId(entry.getCategory() == null ? null : entry.getCategory().getId());
+        Set<Long> tagIds = new LinkedHashSet<>();
+        for (Tag tag : entry.getTags()) {
+            tagIds.add(tag.getId());
+        }
+        dto.setTagIds(tagIds);
         return dto;
     }
 }

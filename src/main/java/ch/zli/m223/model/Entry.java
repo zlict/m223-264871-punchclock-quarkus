@@ -3,6 +3,8 @@ package ch.zli.m223.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 public class Entry {
@@ -15,6 +17,21 @@ public class Entry {
 
   @Column(nullable = false)
   private LocalDateTime checkOut;
+
+  @ManyToOne
+  @JoinColumn(name = "category_id")
+  private Category category;
+
+  @ManyToMany
+  @JoinTable(name = "entry_tag",
+      joinColumns = @JoinColumn(name = "entry_id"),
+      inverseJoinColumns = @JoinColumn(name = "tag_id"))
+  private Set<Tag> tags = new LinkedHashSet<>();
+
+  public Category getCategory() { return category; }
+  public void setCategory(Category category) { this.category = category; }
+  public Set<Tag> getTags() { return tags; }
+  public void setTags(Set<Tag> tags) { this.tags = tags; }
 
   public Long getId() {
     return id;
