@@ -18,6 +18,7 @@ public class EntryService {
 
     @Transactional
     public Entry createEntry(Entry entry) {
+        validateEntry(entry);
         entryRepository.persist(entry);
         return entry;
     }
@@ -31,12 +32,19 @@ public class EntryService {
         if (existingEntry == null) {
             throw new NotFoundException("Entry not found");
         }
-        if (entry == null || entry.getCheckIn() == null || entry.getCheckOut() == null) {
-            throw new BadRequestException("Check-in and check-out are required");
-        }
+        validateEntry(entry);
         existingEntry.setCheckIn(entry.getCheckIn());
         existingEntry.setCheckOut(entry.getCheckOut());
         return existingEntry;
+    }
+
+    private static void validateEntry(Entry entry) {
+        if (entry == null || entry.getCheckIn() == null || entry.getCheckOut() == null) {
+            throw new BadRequestException("Check-in and check-out are required");
+        }
+        if (!entry.getCheckIn().isBefore(entry.getCheckOut())) {
+            throw new BadRequestException("Check-in must be before check-out");
+        }
     }
 
     @Transactional

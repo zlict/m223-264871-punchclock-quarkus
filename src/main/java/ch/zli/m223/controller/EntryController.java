@@ -3,6 +3,8 @@ package ch.zli.m223.controller;
 import java.util.List;
 
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.DELETE;
@@ -39,7 +41,7 @@ public class EntryController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Creates a new entry.", description = "Creates a new entry and returns the newly added entry.")
-    public EntryDto create(EntryDto entry) {
+    public EntryDto create(@NotNull @Valid EntryDto entry) {
         return toDto(entryService.createEntry(toEntity(entry)));
     }
 
@@ -48,7 +50,7 @@ public class EntryController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Updates an entry.", description = "Replaces check-in and check-out of an existing entry.")
-    public EntryDto update(@PathParam("id") Long id, EntryDto entry) {
+    public EntryDto update(@PathParam("id") Long id, @NotNull @Valid EntryDto entry) {
         return toDto(entryService.updateEntry(id, toEntity(entry)));
     }
 

@@ -69,6 +69,25 @@ public class EntryResourceTest {
           .when().put("/entries/{id}", id)
           .then().statusCode(400);
 
+        for (String invalidEntry : new String[] {
+                "{}",
+                "null",
+                "{\"checkIn\":\"2026-09-29T09:00:00\"}",
+                "{\"checkOut\":\"2026-09-29T18:00:00\"}",
+                "{\"checkIn\":\"2026-09-29T18:00:00\",\"checkOut\":\"2026-09-29T09:00:00\"}",
+                "{\"checkIn\":\"2026-09-29T09:00:00\",\"checkOut\":\"2026-09-29T09:00:00\"}"
+        }) {
+            given()
+              .contentType("application/json").body(invalidEntry)
+              .when().post("/entries")
+              .then().statusCode(400);
+
+            given()
+              .contentType("application/json").body(invalidEntry)
+              .when().put("/entries/{id}", id)
+              .then().statusCode(400);
+        }
+
         given()
           .when().get("/entries")
           .then()
